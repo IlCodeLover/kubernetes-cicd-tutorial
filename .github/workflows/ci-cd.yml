@@ -34,6 +34,7 @@ jobs:
         shell: bash
         env:
           GIT_TOKEN: ${{ secrets.GITOPS_PAT }}
+          LOWER_REPO: ${{ steps.repo_case.outputs.repo }}
         run: |
           # Configure git credential store
           git config --global credential.helper store
@@ -49,27 +50,24 @@ jobs:
           echo "---> Before changing script <------"
           cat deployment.yaml
                
+          # Image names in GHCR are lowercase, so match/replace using LOWER_REPO
           if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s|image: ghcr.io/${{ github.repository }}:.*|image: ghcr.io/${{ github.repository }}:${{ github.sha }}|g" deployment.yaml
+            sed -i '' "s|image: ghcr.io/${LOWER_REPO}:.*|image: ghcr.io/${LOWER_REPO}:${{ github.sha }}|g" deployment.yaml
           else
-            sed -i "s|image: ghcr.io/${{ github.repository }}:.*|image: ghcr.io/${{ github.repository }}:${{ github.sha }}|g" deployment.yaml
+            sed -i "s|image: ghcr.io/${LOWER_REPO}:.*|image: ghcr.io/${LOWER_REPO}:${{ github.sha }}|g" deployment.yaml
           fi
 
-          # updated the string-replacement command inside your GitOps script to use ${LOWER_REPO} instead of ${{ github.repository }}
-          # if [[ "$OSTYPE" == "darwin"* ]]; then
-          #   sed -i '' "s|image: ghcr.io/${LOWER_REPO}:.*|image: ghcr.io/${LOWER_REPO}:${{ github.sha }}|g" deployment.yaml
-          # else
-          #   sed -i "s|image: ghcr.io/${LOWER_REPO}:.*|image: ghcr.io/${LOWER_REPO}:${{ github.sha }}|g" deployment.yaml
-          # fi
-
-          echo "---> After updated the string-replacement command inside your GitOps script to use LOWER_REPO <------"
+          echo "---> After changing script <------"
           cat deployment.yaml
-          
+
           # Commit changes
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add deployment.yaml
-          git commit -m "Update image to ${{ github.sha }}"
-          
-          # Push
-          git push -f https://${GIT_TOKEN}@github.com/IlCodeLover/grade-api-gitops.git main
+          if git diff --cached --quiet; then
+            echo "No image change, skipping commit"
+          else
+            git commit -m "Update image to ${{ github.sha }}"
+            # Push
+            git push -f https://${GIT_TOKEN}@github.com/IlCodeLover/grade-api-gitops.git main
+          fi
