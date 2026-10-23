@@ -18,6 +18,10 @@ jobs:
           password: ${{ secrets.CR_PAT }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+      # Convert repository name to lowercase to prevent GHCR uppercase errors
+      - name: Lowercase Repository Name
+        id: repo_case
+        run: echo "repo=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
