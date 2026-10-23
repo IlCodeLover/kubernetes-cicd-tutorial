@@ -45,11 +45,12 @@ jobs:
           # Clone repository using HTTPS URL without token
           git clone https://github.com/IlCodeLover/grade-api-gitops.git gitops
           cd gitops
-          
+
+          # updated the string-replacement command inside your GitOps script to use ${LOWER_REPO} instead of ${{ github.repository }}
           if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s|image: ghcr.io/${{ github.repository }}:.*|image: ghcr.io/${{ github.repository }}:${{ github.sha }}|g" deployment.yaml
+            sed -i '' "s|image: ghcr.io/${LOWER_REPO}:.*|image: ghcr.io/${LOWER_REPO}:${{ github.sha }}|g" deployment.yaml
           else
-            sed -i "s|image: ghcr.io/${{ github.repository }}:.*|image: ghcr.io/${{ github.repository }}:${{ github.sha }}|g" deployment.yaml
+            sed -i "s|image: ghcr.io/${LOWER_REPO}:.*|image: ghcr.io/${LOWER_REPO}:${{ github.sha }}|g" deployment.yaml
           fi
           
           # Commit changes
