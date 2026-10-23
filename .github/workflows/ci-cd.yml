@@ -46,7 +46,7 @@ jobs:
           git clone https://github.com/IlCodeLover/grade-api-gitops.git gitops
           cd gitops
 
-          echo "---> Before changing <------"
+          echo "---> Before changing script <------"
           cat deployment.yaml
                
           if [[ "$OSTYPE" == "darwin"* ]]; then
