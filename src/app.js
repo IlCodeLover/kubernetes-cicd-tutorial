@@ -9,7 +9,7 @@ app.use(cors());
 let grades = [];
 
 app.get('/grades', (req, res) => {
-  console.log('Received GET request for grades');
+  console.log('Received GET request for grades. UPDATED to trigger the GitAction run.');
   res.json(grades);
 });
 
