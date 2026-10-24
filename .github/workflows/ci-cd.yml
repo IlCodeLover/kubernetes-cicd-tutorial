@@ -18,7 +18,7 @@ jobs:
           password: ${{ secrets.CR_PAT }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      # Convert repository name to lowercase to prevent GHCR uppercase errors
+      # Convert repository name to lowercase in image tag in order to prevent GHCR uppercase errors
       - name: Lowercase Repository Name
         id: repo_case
         run: echo "repo=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
@@ -50,7 +50,7 @@ jobs:
           echo "---> Before changing script <------"
           cat deployment.yaml
                
-          # Image names in GHCR are lowercase, so match/replace using LOWER_REPO
+          # Image names in GHCR are lowercase. Therefore we search image tag in lowercase and when it is found, we add suffix sha so every image tag is unique
           if [[ "$OSTYPE" == "darwin"* ]]; then
             sed -i '' "s|image: ghcr.io/${LOWER_REPO}:.*|image: ghcr.io/${LOWER_REPO}:${{ github.sha }}|g" deployment.yaml
           else
