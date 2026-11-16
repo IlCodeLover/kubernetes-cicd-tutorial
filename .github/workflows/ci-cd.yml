@@ -10,6 +10,10 @@ jobs:
     runs-on: self-hosted
     steps:
       # Clone the code in the main repo so when we set up an action runner, it's going to clone the code in such a way that the workflow runner (described in this file) will be able to access it for the subsequent steps
+      #The actions/checkout action is a standard GitHub Action that clones the repository associated with the workflow into the runner's workspace
+      - name: Starting code checkout
+        run: |
+          echo "Starting kubernetes-cicd-tutorial code checkout in directory: $(pwd)"
       - name: Checkout code
         uses: actions/checkout@v3
       # Login to GHCR where we want to package contents of that repo into an image and push it there
@@ -48,10 +52,11 @@ jobs:
           # Remove any existing gitops directory
           rm -rf gitops
           
+          echo "Current parent directory to clone GitOps: $(pwd)"
           # Clone repository using HTTPS URL without token
           git clone https://github.com/IlCodeLover/grade-api-gitops.git gitops
           cd gitops
-
+          echo "Gitops is cloned in this directory: $(pwd)"
           echo "---> Before changing script <------"
           cat deployment.yaml
                
@@ -69,10 +74,14 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add deployment.yaml
+          echo "Files to be added:"
+          git diff --cached --name-only
           if git diff --cached --quiet; then
             echo "No image change, skipping commit"
           else
             git commit -m "Update image to ${{ github.sha }}"
+            echo "Detected image change, start committing and pushing to GitOps repository"
             # Push
             git push -f https://${GIT_TOKEN}@github.com/IlCodeLover/grade-api-gitops.git main
+            echo "Push new image tag to GitOps repository successfully"
           fi
