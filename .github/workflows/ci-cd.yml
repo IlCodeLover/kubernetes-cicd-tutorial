@@ -5,11 +5,14 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
+  # This job has many steps and some of them are using github actions to perform tasks like checking out code, logging into GHCR, building and pushing docker images, and updating the GitOps repository.
   build-and-push:
     runs-on: self-hosted
     steps:
+      # Clone the code in the main repo so when we set up an action runner, it's going to clone the code in such a way that the workflow runner (described in this file) will be able to access it for the subsequent steps
       - name: Checkout code
         uses: actions/checkout@v3
+      # Login to GHCR where we want to package contents of that repo into an image and push it there
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -25,6 +28,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
+          # everything in the current directory of the repo that was cloned will be packaged into the docker image and pushed to GHCR
+          # each image will be tagged with the latest tag and the commit SHA so that we can track which image corresponds to which commit
           context: .
           push: true
           tags: |
